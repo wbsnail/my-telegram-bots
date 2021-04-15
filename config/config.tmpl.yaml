@@ -1,0 +1,4 @@
+name: 'Debugging'
+mock-ww-client: true
+telegram-bot-token: ''
+telegram-admin-chat-id: ''
