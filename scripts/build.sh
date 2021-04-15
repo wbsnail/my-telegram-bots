@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-set -x
 
 nodeRole=$1
 commit=$2
