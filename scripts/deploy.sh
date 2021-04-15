@@ -17,15 +17,11 @@ fi
 
 echo 'Syncing files'
 
-echo "${SSH_KEY}" > /tmp/id_rsa
-
-chmod 600 /tmp/id_rsa
-
 BUILD_DIR="${CI_DIR}/my-telegram-bots"
 
 rsync \
   -avz \
-  -e "ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no -p ${SSH_PORT}" \
+  -e "ssh -o StrictHostKeyChecking=no -p ${SSH_PORT}" \
   --delete-after \
   --progress \
   --relative \
