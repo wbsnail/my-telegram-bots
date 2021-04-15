@@ -18,9 +18,10 @@ fi
 echo 'Syncing files'
 
 BUILD_DIR="${CI_DIR}/my-telegram-bots"
+
 rsync \
   -avz \
-  -e "ssh -i ./credentials/id_rsa -o StrictHostKeyChecking=no -p ${SSH_PORT}" \
+  -e "ssh -o StrictHostKeyChecking=no -p ${SSH_PORT}" \
   --delete-after \
   --progress \
   --relative \

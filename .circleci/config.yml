@@ -23,7 +23,7 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - build         
+        - build
   deploy_preview:
     docker:
     - image: instrumentisto/rsync-ssh
@@ -67,6 +67,8 @@ workflows:
         filters:
           branches:
             only: main
+        context:
+        - default
     - deploy:
         requires:
         - build_go
@@ -75,3 +77,5 @@ workflows:
             ignore: /.*/
           tags:
             only: /^v.*/
+        context:
+        - default
