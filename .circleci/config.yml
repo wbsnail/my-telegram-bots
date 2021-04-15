@@ -1,0 +1,73 @@
+version: 2.1
+jobs:
+  build_go_preview:
+    docker:
+    - image: cimg/go:1.16.0
+    steps:
+    - checkout
+    - run:
+        name: Go build
+        command: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 -ldflag="github.com/wbsnail/my-telegram-bots/pkg/cmd.Version=${GIT_COMMIT:0:8}" go build -o ./build/bots .
+    - persist_to_workspace:
+        root: .
+        paths:
+        - build
+  build_go:
+    docker:
+    - image: cimg/go:1.16.0
+    steps:
+    - checkout
+    - run:
+        name: Go build
+        command: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 -ldflag="github.com/wbsnail/my-telegram-bots/pkg/cmd.Version=${GIT_TAG}" go build -o ./build/bots .
+    - persist_to_workspace:
+        root: .
+        paths:
+        - build         
+  deploy_preview:
+    docker:
+    - image: instrumentisto/rsync-ssh
+    steps:
+    - checkout
+    - attach_workspace:
+        at: /tmp/workspace
+    - run:
+        name: Move go bin
+        command: mv /tmp/workspace/build ./build
+    - run: ./scripts/deploy.sh 1
+  deploy:
+    docker:
+    - image: instrumentisto/rsync-ssh
+    steps:
+    - checkout
+    - attach_workspace:
+        at: /tmp/workspace
+    - run:
+        name: Move go bin
+        command: mv /tmp/workspace/build ./build
+    - run: ./scripts/deploy.sh
+
+workflows:
+  version: 2
+  build_and_release:
+    jobs:
+    - build_go_preview:
+        filters:
+          branches:
+            only: main
+    - build_go:
+        filters:
+          tags:
+            only: /^v.*/
+    - deploy_preview:
+        requires:
+        - build_go_preview
+        filters:
+          branches:
+            only: main
+    - deploy:
+        requires:
+        - build_go
+        filters:
+          tags:
+            only: /^v.*/
