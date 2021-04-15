@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-big-days
+  namespace: __namespace__
+  labels:
+    app: bot-big-days
+    git-commit: commit_placeholder
+spec:
+  selector:
+    matchLabels:
+      app: bot-big-days
+  template:
+    metadata:
+      labels:
+        app: bot-big-days
+        git-commit: commit_placeholder
+    spec:
+      containers:
+      - name: main
+        image: my-telegram-bots:__tag__
+        ports:
+        - containerPort: 9527
+        env:
+        - name: ENV
+          value: __env__
+        command:
+        - bots serve big-days
+        args:
+        - -c
+        - /opt/config/config.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /opt/config
+      volumes:
+      - name: config
+        configMap:
+          name: bot-big-days
+      nodeSelector:
+        role: __node_role__
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-ww-manager
+  namespace: __namespace__
+  labels:
+    app: bot-ww-manager
+    git-commit: commit_placeholder
+spec:
+  selector:
+    matchLabels:
+      app: bot-ww-manager
+  template:
+    metadata:
+      labels:
+        app: bot-ww-manager
+        git-commit: commit_placeholder
+    spec:
+      containers:
+      - name: main
+        image: my-telegram-bots:__tag__
+        ports:
+        - containerPort: 9527
+        env:
+        - name: ENV
+          value: __env__
+        command:
+        - bots serve ww-manager
+        args:
+        - -c
+        - /opt/config/config.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /opt/config
+      volumes:
+      - name: config
+        configMap:
+          name: bot-ww-manager
+      nodeSelector:
+        role: __node_role__
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-wbsnail
+  namespace: __namespace__
+  labels:
+    app: bot-wbsnail
+    git-commit: commit_placeholder
+spec:
+  selector:
+    matchLabels:
+      app: bot-wbsnail
+  template:
+    metadata:
+      labels:
+        app: bot-wbsnail
+        git-commit: commit_placeholder
+    spec:
+      containers:
+      - name: main
+        image: my-telegram-bots:__tag__
+        ports:
+        - containerPort: 9527
+        env:
+        - name: ENV
+          value: __env__
+        command:
+        - bots serve wbsnail
+        args:
+        - -c
+        - /opt/config/config.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /opt/config
+      volumes:
+      - name: config
+        configMap:
+          name: bot-wbsnail
+      nodeSelector:
+        role: __node_role__
