@@ -28,12 +28,7 @@ rsync \
   --rsync-path="mkdir -p ${BUILD_DIR} && rsync" \
   build \
   deploy \
-  docker_image \
-  frontend/dist \
   scripts \
-  templates \
-  translations \
-  vite/dist \
   "${SSH_USER}"@"${SSH_ADDRESS}":"${BUILD_DIR}"
 
 echo 'Sync finished, building'
