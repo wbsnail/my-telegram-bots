@@ -29,6 +29,8 @@ rsync \
   build \
   deploy \
   scripts \
+  .dockerignore \
+  Dockerfile \
   "${SSH_USER}"@"${SSH_ADDRESS}":"${BUILD_DIR}"
 
 echo 'Sync finished, building'
