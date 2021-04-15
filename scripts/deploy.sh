@@ -34,7 +34,7 @@ rsync \
 
 echo 'Sync finished, building'
 
-echo "Build command: ${BUILD_DIR}/scripts/build.sh ${CIRCLE_SHA1} ${tag} ${preview}"
+echo "Build command: ${BUILD_DIR}/scripts/build.sh ${NODE_ROLE} ${CIRCLE_SHA1} ${tag} ${preview}"
 
 ssh \
   -o UserKnownHostsFile=/dev/null \
