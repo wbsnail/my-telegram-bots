@@ -36,7 +36,6 @@ echo 'Sync finished, building'
 echo "Build command: ${BUILD_DIR}/scripts/build.sh ${CIRCLE_SHA1} ${tag} ${preview}"
 
 ssh \
-  -i ./credentials/id_rsa \
   -o UserKnownHostsFile=/dev/null \
   -o StrictHostKeyChecking=no \
   -p "${SSH_PORT}" \
