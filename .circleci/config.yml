@@ -1,23 +1,5 @@
 version: 2.1
 jobs:
-  build_go_preview:
-    docker:
-    - image: cimg/go:1.16.3
-    steps:
-    - checkout
-    - restore_cache:
-        key: go-mod-v1-{{ checksum "go.sum" }}
-    - run:
-        name: Go build
-        command: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-X 'github.com/wbsnail/my-telegram-bots/pkg/cmd.Version=${CIRCLE_SHA1:0:8}'" -o ./build/bots .
-    - persist_to_workspace:
-        root: .
-        paths:
-        - build
-    - save_cache:
-        key: go-mod-v1-{{ checksum "go.sum" }}
-        paths:
-        - "/home/circleci/go/pkg/mod"
   build_go:
     docker:
     - image: cimg/go:1.16.3
@@ -27,7 +9,13 @@ jobs:
         key: go-mod-v1-{{ checksum "go.sum" }}
     - run:
         name: Go build
-        command: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-X 'github.com/wbsnail/my-telegram-bots/pkg/cmd.Version=${CIRCLE_TAG}'" -o ./build/bots .
+        command: |
+          if [ "${CIRCLE_TAG}" == "" ]; then
+            tag=${CIRCLE_SHA1}
+          else
+            tag=${CIRCLE_TAG}
+          fi
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-X 'github.com/wbsnail/my-telegram-bots/pkg/cmd.Version=${tag}'" -o ./build/bots .
     - persist_to_workspace:
         root: .
         paths:
@@ -36,17 +24,6 @@ jobs:
         key: go-mod-v1-{{ checksum "go.sum" }}
         paths:
         - "/home/circleci/go/pkg/mod"
-  deploy_preview:
-    docker:
-    - image: instrumentisto/rsync-ssh
-    steps:
-    - checkout
-    - attach_workspace:
-        at: /tmp/workspace
-    - run:
-        name: Move go bin
-        command: mv /tmp/workspace/build ./build
-    - run: ./scripts/deploy.sh 1
   deploy:
     docker:
     - image: instrumentisto/rsync-ssh
@@ -57,36 +34,26 @@ jobs:
     - run:
         name: Move go bin
         command: mv /tmp/workspace/build ./build
-    - run: ./scripts/deploy.sh
-
+    - run:
+        name: Deploy
+        command: |
+          if [ "${CIRCLE_TAG}" == "" ]; then
+            p=1
+          else
+            p=""
+          fi
+          ./scripts/deploy.sh ${p}
 workflows:
   version: 2
   build_and_release_preview:
     jobs:
-    - build_go_preview:
-        filters:
-          branches:
-            only: main
-    - build_go:
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /^v.*/
-    - deploy_preview:
-        requires:
-        - build_go_preview
-        filters:
-          branches:
-            only: main
-        context:
-        - default
+    - build_go
     - deploy:
         requires:
         - build_go
         filters:
           branches:
-            ignore: /.*/
+            only: main
           tags:
             only: /^v.*/
         context:
