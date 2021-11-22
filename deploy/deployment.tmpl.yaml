@@ -100,7 +100,7 @@ spec:
     spec:
       containers:
       - name: main
-        image: registry.digitalocean.com/wbsnail/mirror:bots:__tag__
+        image: registry.digitalocean.com/wbsnail/bots:__tag__
         ports:
         - containerPort: 9527
         env:
