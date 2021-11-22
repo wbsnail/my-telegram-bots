@@ -1,4 +1,7 @@
+# https://circleci.com/docs/2.0/configuration-reference/
 version: 2.1
+orbs:
+  kubernetes: circleci/kubernetes@0.12.1
 jobs:
   build_go:
     docker:
@@ -24,9 +27,9 @@ jobs:
         key: go-mod-v1-{{ checksum "go.sum" }}
         paths:
         - "/home/circleci/go/pkg/mod"
-  deploy:
+  build_image_backend:
     docker:
-    - image: instrumentisto/rsync-ssh
+    - image: docker:17.05.0-ce-git
     steps:
     - checkout
     - attach_workspace:
@@ -34,23 +37,86 @@ jobs:
     - run:
         name: Move go bin
         command: mv /tmp/workspace/build ./build
+    - setup_remote_docker
+    - restore_cache:
+        keys:
+        - v1-{{ .Branch }}
+        paths:
+        - /caches/bots.tar
     - run:
-        name: Deploy
+        name: Load Docker image layer cache
+        command: |
+          set +o pipefail
+          docker load -i /caches/bots.tar | true
+    - run:
+        name: Build application Docker image
+        command: |
+          docker build --cache-from=bots -t bots .
+    - run:
+        name: Save Docker image layer cache
+        command: |
+          mkdir -p /caches
+          docker save -o /caches/bots.tar bots
+    - save_cache:
+        key: v1-{{ .Branch }}-{{ epoch }}
+        paths:
+        - /caches/bots.tar
+    - deploy:
+        name: Push application Docker image
         command: |
           if [ "${CIRCLE_TAG}" == "" ]; then
-            p=1
+            tag=${CIRCLE_SHA1}
           else
-            p=""
+            tag=${CIRCLE_TAG}
           fi
-          ./scripts/deploy.sh ${p}
+          token=${CONTAINER_REGISTRY_TOKEN}
+          docker login registry.digitalocean.com --username=${token} --password=${token}
+          docker tag bots "registry.digitalocean.com/wbsnail/mirror:telegram_bots_${tag}"
+          docker push "registry.digitalocean.com/wbsnail/mirror:telegram_bots_${tag}"
+  deploy:
+    docker:
+    - image: 'cimg/base:stable'
+    steps:
+    - checkout
+    - kubernetes/install-kubectl
+    - kubernetes/install-kubeconfig:
+        kubeconfig: KUBECONFIG_DATA
+    - run:
+        name: Kubectl apply
+        command: |
+          if [ "${CIRCLE_TAG}" == "" ]; then
+            namespace=preview
+            env=preview
+            tag=${CIRCLE_SHA1}
+          else
+            namespace=production
+            env=production
+            tag=${CIRCLE_TAG}
+          fi
+          sed "s/__namespace__/${namespace}/g;
+               s/__env__/${env}/g;
+               s/__tag__/${tag}/g;
+               s/commit_placeholder/${CIRCLE_SHA1}/g;" \
+            ./deploy/deployment.tmpl.yaml >./deploy/deployment.yaml
+          kubectl apply -f ./deploy/deployment.yaml
 workflows:
   version: 2
-  build_and_release_preview:
+  build_and_release:
     jobs:
     - build_go
-    - deploy:
+    - build_image_backend:
         requires:
         - build_go
+        filters:
+          branches:
+            only: main
+          tags:
+            only: /^v.*/
+        context:
+        - default
+    - deploy:
+        requires:
+        - build_image_backend
         filters:
           branches:
             only: main
