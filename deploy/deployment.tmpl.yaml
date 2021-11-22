@@ -38,8 +38,6 @@ spec:
       - name: config
         configMap:
           name: bot-big-days
-      nodeSelector:
-        role: __node_role__
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -81,8 +79,6 @@ spec:
       - name: config
         configMap:
           name: bot-ww-manager
-      nodeSelector:
-        role: __node_role__
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -124,5 +120,3 @@ spec:
       - name: config
         configMap:
           name: bot-wbsnail
-      nodeSelector:
-        role: __node_role__
