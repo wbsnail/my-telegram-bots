@@ -71,8 +71,8 @@ jobs:
           fi
           token=${CONTAINER_REGISTRY_TOKEN}
           docker login registry.digitalocean.com --username=${token} --password=${token}
-          docker tag bots "registry.digitalocean.com/wbsnail/mirror:telegram_bots_${tag}"
-          docker push "registry.digitalocean.com/wbsnail/mirror:telegram_bots_${tag}"
+          docker tag bots "registry.digitalocean.com/wbsnail/bots:${tag}"
+          docker push "registry.digitalocean.com/wbsnail/bots:${tag}"
   deploy:
     docker:
     - image: 'cimg/base:stable'
