@@ -107,14 +107,22 @@ workflows:
         filters:
           branches:
             only: main
+          tags:
+            only: /^v.*/
     - build_image:
         requires:
         - build_go
+        filters:
+          branches:
+            only: main
         context:
         - default
     - deploy:
         requires:
         - build_image
+        filters:
+          branches:
+            only: main
         context:
         - default
   build_and_deploy_production:
@@ -128,10 +136,16 @@ workflows:
     - build_image:
         requires:
         - build_go
+        filters:
+          tags:
+            only: /^v.*/
         context:
         - default
     - deploy:
         requires:
         - build_image
+        filters:
+          tags:
+            only: /^v.*/
         context:
         - default
