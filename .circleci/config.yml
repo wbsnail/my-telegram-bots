@@ -27,7 +27,7 @@ jobs:
         key: go-mod-v1-{{ checksum "go.sum" }}
         paths:
         - "/home/circleci/go/pkg/mod"
-  build_image_backend:
+  build_image:
     docker:
     - image: docker:17.05.0-ce-git
     steps:
@@ -101,26 +101,37 @@ jobs:
           kubectl apply -f ./deploy/deployment.yaml
 workflows:
   version: 2
-  build_and_release:
+  build_and_deploy:
     jobs:
-    - build_go
-    - build_image_backend:
-        requires:
-        - build_go
+    - build_go:
         filters:
           branches:
             only: main
-          tags:
-            only: /^v.*/
+    - build_image:
+        requires:
+        - build_go
         context:
         - default
     - deploy:
         requires:
-        - build_image_backend
+        - build_image
+        context:
+        - default
+  build_and_deploy_production:
+    jobs:
+    - build_go:
         filters:
           branches:
-            only: main
+            ignore: /.*/
           tags:
             only: /^v.*/
+    - build_image:
+        requires:
+        - build_go
+        context:
+        - default
+    - deploy:
+        requires:
+        - build_image
         context:
         - default
