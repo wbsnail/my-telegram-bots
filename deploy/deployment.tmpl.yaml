@@ -38,6 +38,8 @@ spec:
       - name: config
         configMap:
           name: bot-big-days
+      imagePullSecrets:
+      - name: digitalocean-wbsnail
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -79,6 +81,8 @@ spec:
       - name: config
         configMap:
           name: bot-ww-manager
+      imagePullSecrets:
+      - name: digitalocean-wbsnail
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -120,3 +124,5 @@ spec:
       - name: config
         configMap:
           name: bot-wbsnail
+      imagePullSecrets:
+      - name: digitalocean-wbsnail
