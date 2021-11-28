@@ -31,7 +31,7 @@ var env string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "bots",
-	Short: "This is my-telegram-bots command line tool",
+	Short: "This is the my-telegram-bots command line tool",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
