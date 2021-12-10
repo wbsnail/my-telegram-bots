@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	EndpointDays   = "/api/v2/days"
-	EndpointTweets = "/api/v3/tweets"
+	EndpointDays               = "/api/v2/days"
+	EndpointTweets             = "/api/v3/tweets"
+	EndpointCurrentSubscribers = "/api/v2/current-subscribers"
 )
 
 type Day struct {
@@ -24,6 +25,12 @@ type Day struct {
 	HappenYear  int       `json:"happen_year"`
 	HappenMonth int       `json:"happen_month"`
 	HappenDay   int       `json:"happen_day"`
+}
+
+type GetCurrentSubscribersData struct {
+	Youtube  int `json:"youtube"`
+	Bilibili int `json:"bilibili"`
+	Toutiao  int `json:"toutiao"`
 }
 
 type GetDaysData struct {
@@ -38,11 +45,20 @@ type TweetData struct {
 }
 
 type Client interface {
+	GetCurrentSubscribers() (*GetCurrentSubscribersData, error)
 	GetDays() (*GetDaysData, error)
 	Tweet(data TweetData) error
 }
 
 type ClientMock struct{}
+
+func (ClientMock) GetCurrentSubscribers() (*GetCurrentSubscribersData, error) {
+	return &GetCurrentSubscribersData{
+		Youtube:  8,
+		Bilibili: 9,
+		Toutiao:  10,
+	}, nil
+}
 
 func (ClientMock) GetDays() (*GetDaysData, error) {
 	t, _ := time.Parse("2006-01-02", "1990-01-01")
@@ -73,6 +89,28 @@ type ClientImpl struct {
 
 func (c *ClientImpl) url(endpoint string) string {
 	return strings.TrimRight(c.Host, "/") + endpoint
+}
+
+func (c *ClientImpl) GetCurrentSubscribers() (*GetCurrentSubscribersData, error) {
+	req, _ := http.NewRequest("GET", c.url(EndpointCurrentSubscribers), nil)
+	req.Header.Add("Authorization", "Bearer "+c.Token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "send request error")
+	}
+	if resp.StatusCode != 200 {
+		return nil, errors.Errorf("%d returned", resp.StatusCode)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrap(err, "read body content error")
+	}
+	var data GetCurrentSubscribersData
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, errors.Wrap(err, "json decode error")
+	}
+	return &data, nil
 }
 
 func (c *ClientImpl) GetDays() (*GetDaysData, error) {

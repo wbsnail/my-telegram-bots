@@ -19,6 +19,9 @@ var channelGrowCmd = &cobra.Command{
 		options.Name = viper.GetString("name")
 		options.TelegramBotToken = viper.GetString("telegram-bot-token")
 		options.TelegramAdminChatID = viper.GetString("telegram-admin-chat-id")
+		options.MockWWClient = viper.GetBool("mock-ww-client")
+		options.WWHost = viper.GetString("ww-host")
+		options.WWToken = viper.GetString("ww-token")
 		app, err := app_channel_grow.SetupApp(options)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "setup app error"))

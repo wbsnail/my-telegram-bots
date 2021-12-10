@@ -7,6 +7,7 @@ import (
 	"github.com/wbsnail/my-telegram-bots/pkg/app_base"
 	"github.com/wbsnail/my-telegram-bots/pkg/log"
 	"github.com/wbsnail/my-telegram-bots/pkg/services/telegram"
+	"github.com/wbsnail/my-telegram-bots/pkg/services/ww"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"time"
 )
@@ -20,6 +21,17 @@ func SetupApp(options *Options) (*App, error) {
 
 	app := &App{
 		BaseApp: app_base.SetupBaseApp(options.BaseOptions),
+	}
+
+	if options.MockWWClient {
+		log.Info("ww client is mocked, no request will be made")
+		app.WWClient = &ww.ClientMock{}
+	} else {
+		log.Infof("ww host: %s", options.WWHost)
+		app.WWClient = &ww.ClientImpl{
+			Host:  options.WWHost,
+			Token: options.WWToken,
+		}
 	}
 
 	b, err := telegram.NewBot(options.TelegramBotToken)
@@ -43,6 +55,20 @@ func SetupApp(options *Options) (*App, error) {
 
 	b.Handle("/start", start)
 	b.Handle("/help", help)
+
+	b.Handle("/days", func(m *tb.Message) {
+		data, err := app.WWClient.GetCurrentSubscribers()
+		if err != nil {
+			app.Send(m.Sender, fmt.Sprintf("Oops, get days error: %s", err))
+			return
+		}
+		message := fmt.Sprintf("🥳 电波阿布当前订阅者 %d 个!\n\n",
+			data.Youtube+data.Bilibili+data.Toutiao)
+		message += fmt.Sprintf("油管 %d 个\n", data.Youtube)
+		message += fmt.Sprintf("B站 %d 个\n", data.Bilibili)
+		message += fmt.Sprintf("头条 %d 个\n", data.Toutiao)
+		app.Send(m.Sender, message)
+	})
 
 	b.Handle(tb.OnText, help)
 	b.Handle(tb.OnPhoto, unknown)
