@@ -45,7 +45,8 @@ func SetupApp(options *Options) (*App, error) {
 	}
 	helpText := "Available commands:\n\n" +
 		"/start: get started\n" +
-		"/help: get help"
+		"/help: get help\n" +
+		"/subscribers: get current subscribers"
 	start := func(m *tb.Message) {
 		app.Send(m.Sender, fmt.Sprintf("Hello, I'm %s!\n\n%s", app.Name, helpText))
 	}
@@ -56,7 +57,7 @@ func SetupApp(options *Options) (*App, error) {
 	b.Handle("/start", start)
 	b.Handle("/help", help)
 
-	b.Handle("/days", func(m *tb.Message) {
+	b.Handle("/subscribers", func(m *tb.Message) {
 		data, err := app.WWClient.GetCurrentSubscribers()
 		if err != nil {
 			app.Send(m.Sender, fmt.Sprintf("Oops, get days error: %s", err))
