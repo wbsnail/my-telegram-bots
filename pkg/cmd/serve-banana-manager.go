@@ -5,15 +5,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/spongeprojects/magicconch"
-	"github.com/wbsnail/my-telegram-bots/pkg/app_big_days"
+	"github.com/wbsnail/my-telegram-bots/pkg/app_banana_manager"
 	"github.com/wbsnail/my-telegram-bots/pkg/log"
 )
 
-var bigDaysCmd = &cobra.Command{
-	Use:   "big-days",
-	Short: "Start big-days bot",
+var bananaManagerCmd = &cobra.Command{
+	Use:   "banana-manager",
+	Short: "Start banana-manager bot",
 	Run: func(cmd *cobra.Command, args []string) {
-		options := &app_big_days.Options{}
+		options := &app_banana_manager.Options{}
 		options.Version = Version
 		options.Addr = viper.GetString("addr")
 		options.Name = viper.GetString("name")
@@ -22,7 +22,7 @@ var bigDaysCmd = &cobra.Command{
 		options.MockWWClient = viper.GetBool("mock-ww-client")
 		options.WWHost = viper.GetString("ww-host")
 		options.WWToken = viper.GetString("ww-token")
-		app, err := app_big_days.SetupApp(options)
+		app, err := app_banana_manager.SetupApp(options)
 		if err != nil {
 			log.Fatal(errors.Wrap(err, "setup app error"))
 		}
@@ -34,8 +34,8 @@ var bigDaysCmd = &cobra.Command{
 }
 
 func init() {
-	serveCmd.AddCommand(bigDaysCmd)
-	f := bigDaysCmd.PersistentFlags()
+	serveCmd.AddCommand(bananaManagerCmd)
+	f := bananaManagerCmd.PersistentFlags()
 	f.Bool("mock-ww-client", false, "mock ww service")
 	f.String("ww-host", "", "ww service host")
 	f.String("ww-token", "", "ww service token")

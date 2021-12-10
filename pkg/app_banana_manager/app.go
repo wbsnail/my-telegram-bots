@@ -1,4 +1,4 @@
-package app_big_days
+package app_banana_manager
 
 import (
 	"github.com/wbsnail/my-telegram-bots/pkg/app_base"
@@ -16,5 +16,6 @@ type Options struct {
 type App struct {
 	app_base.BaseApp
 
-	WWClient ww.Client
+	WWClient        ww.Client
+	ChatStatusStore *ChatStatusStore
 }

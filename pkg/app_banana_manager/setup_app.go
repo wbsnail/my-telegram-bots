@@ -1,4 +1,4 @@
-package app_big_days
+package app_banana_manager
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ func SetupApp(options *Options) (*App, error) {
 	app := &App{
 		BaseApp: app_base.SetupBaseApp(options.BaseOptions),
 	}
+	app.ChatStatusStore = NewChatStatusStore()
 
 	if options.MockWWClient {
 		log.Info("ww client is mocked, no request will be made")
@@ -46,7 +47,8 @@ func SetupApp(options *Options) (*App, error) {
 	helpText := "Available commands:\n\n" +
 		"/start: get started\n" +
 		"/help: get help\n" +
-		"/list: list big days"
+		"/days: list big days\n" +
+		"/tweet: tweet"
 	start := func(m *tb.Message) {
 		app.Send(m.Sender, fmt.Sprintf("Hello, I'm %s!\n\n%s", app.Name, helpText))
 	}
@@ -57,8 +59,8 @@ func SetupApp(options *Options) (*App, error) {
 	b.Handle("/start", start)
 	b.Handle("/help", help)
 
-	b.Handle("/list", func(m *tb.Message) {
-		data, err := app.WWClient.GetBigDays()
+	b.Handle("/days", func(m *tb.Message) {
+		data, err := app.WWClient.GetDays()
 		if err != nil {
 			app.Send(m.Sender, fmt.Sprintf("Oops, get days error: %s", err))
 			return
@@ -70,7 +72,45 @@ func SetupApp(options *Options) (*App, error) {
 		app.Send(m.Sender, days)
 	})
 
-	b.Handle(tb.OnText, help)
+	b.Handle("/tweet", func(m *tb.Message) {
+		app.ChatStatusStore.Set(m.Chat.ID, StatusComposingTweet)
+		app.Send(m.Sender, "输入内容 (/cancel):")
+	})
+	b.Handle("/cancel", func(m *tb.Message) {
+		status := app.ChatStatusStore.Get(m.Chat.ID)
+		switch status {
+		case StatusComposingTweet:
+			if m.Text == "/cancel" {
+				app.ChatStatusStore.Unset(m.Chat.ID)
+				app.Send(m.Sender, "取消发送")
+				return
+			}
+		default:
+			app.Send(m.Sender, helpText)
+		}
+	})
+
+	b.Handle(tb.OnText, func(m *tb.Message) {
+		status := app.ChatStatusStore.Get(m.Chat.ID)
+		switch status {
+		case StatusComposingTweet:
+			err := app.WWClient.Tweet(ww.TweetData{
+				ChatID:  fmt.Sprintf("%d", m.Chat.ID),
+				Content: m.Text,
+			})
+			if err != nil {
+				app.Send(m.Sender, fmt.Sprintf("Oops, send tweet error: %s", err))
+				app.ChatStatusStore.Unset(m.Chat.ID)
+				return
+			}
+			app.ChatStatusStore.Unset(m.Chat.ID)
+			app.Send(m.Sender, "发送成功!")
+			return
+		default:
+			app.Send(m.Sender, helpText)
+			return
+		}
+	})
 	b.Handle(tb.OnPhoto, unknown)
 	b.Handle(tb.OnSticker, func(m *tb.Message) {
 		app.Send(m.Sender, m.Sticker.Emoji)

@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	EndpointBigDays = "/api/v2/days"
-	EndpointTweets  = "/api/v3/tweets"
+	EndpointDays   = "/api/v2/days"
+	EndpointTweets = "/api/v3/tweets"
 )
 
 type Day struct {
@@ -26,7 +26,7 @@ type Day struct {
 	HappenDay   int       `json:"happen_day"`
 }
 
-type GetBigDaysData struct {
+type GetDaysData struct {
 	Days []Day `json:"days"`
 }
 
@@ -38,15 +38,15 @@ type TweetData struct {
 }
 
 type Client interface {
-	GetBigDays() (*GetBigDaysData, error)
+	GetDays() (*GetDaysData, error)
 	Tweet(data TweetData) error
 }
 
 type ClientMock struct{}
 
-func (ClientMock) GetBigDays() (*GetBigDaysData, error) {
+func (ClientMock) GetDays() (*GetDaysData, error) {
 	t, _ := time.Parse("2006-01-02", "1990-01-01")
-	return &GetBigDaysData{
+	return &GetDaysData{
 		Days: []Day{
 			{
 				ID:          1,
@@ -75,8 +75,8 @@ func (c *ClientImpl) url(endpoint string) string {
 	return strings.TrimRight(c.Host, "/") + endpoint
 }
 
-func (c *ClientImpl) GetBigDays() (*GetBigDaysData, error) {
-	req, _ := http.NewRequest("GET", c.url(EndpointBigDays), nil)
+func (c *ClientImpl) GetDays() (*GetDaysData, error) {
+	req, _ := http.NewRequest("GET", c.url(EndpointDays), nil)
 	req.Header.Add("Authorization", "Bearer "+c.Token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *ClientImpl) GetBigDays() (*GetBigDaysData, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "read body content error")
 	}
-	var data GetBigDaysData
+	var data GetDaysData
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil, errors.Wrap(err, "json decode error")

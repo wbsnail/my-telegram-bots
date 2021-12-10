@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bot-big-days
+  name: bot-channel-grow
   namespace: __namespace__
   labels:
-    app: bot-big-days
+    app: bot-channel-grow
     git-commit: commit_placeholder
 spec:
   selector:
     matchLabels:
-      app: bot-big-days
+      app: bot-channel-grow
   template:
     metadata:
       labels:
-        app: bot-big-days
+        app: bot-channel-grow
         git-commit: commit_placeholder
     spec:
       containers:
@@ -28,7 +28,7 @@ spec:
         - /bots
         args:
         - serve
-        - big-days
+        - channel-grow
         - -c
         - /opt/config/config.yaml
         volumeMounts:
@@ -37,26 +37,26 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: bot-big-days
+          name: bot-channel-grow
       imagePullSecrets:
       - name: digitalocean-wbsnail
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bot-ww-manager
+  name: bot-banana-manager
   namespace: __namespace__
   labels:
-    app: bot-ww-manager
+    app: bot-banana-manager
     git-commit: commit_placeholder
 spec:
   selector:
     matchLabels:
-      app: bot-ww-manager
+      app: bot-banana-manager
   template:
     metadata:
       labels:
-        app: bot-ww-manager
+        app: bot-banana-manager
         git-commit: commit_placeholder
     spec:
       containers:
@@ -71,7 +71,7 @@ spec:
         - /bots
         args:
         - serve
-        - ww-manager
+        - banana-manager
         - -c
         - /opt/config/config.yaml
         volumeMounts:
@@ -80,7 +80,7 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: bot-ww-manager
+          name: bot-banana-manager
       imagePullSecrets:
       - name: digitalocean-wbsnail
 ---

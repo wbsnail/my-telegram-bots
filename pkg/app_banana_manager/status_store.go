@@ -1,4 +1,4 @@
-package app_ww_manager
+package app_banana_manager
 
 type Status string
 
